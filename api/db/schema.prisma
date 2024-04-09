@@ -17,9 +17,53 @@ generator client {
 // Define your own datamodels here and run `yarn redwood prisma migrate dev`
 // to create migrations for them and apply to your dev DB.
 // TODO: Please remove the following example:
+model Institution {
+  id                 Int        @id @default(autoincrement())
+  donations          Donation[]
+  name               String?    @unique
+  description        String?
+  contactInformation String?
+  logo               String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+enum PaymentStatus {
+  Pending
+  Completed
+  Cancelled
+}
+
+model UserBank {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  donations Donation[]
+  name      String
+  balance   Float
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  name  String?
-  age   Int?
-  email String  @unique
+  id        Int        @id @default(autoincrement())
+  donations Donation[]
+  user_bank UserBank[]
+  name      String?
+  age       Int?
+  email     String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Donation {
+  id            Int           @id @default(autoincrement())
+  institutionId Int
+  institution   Institution   @relation(fields: [institutionId], references: [id])
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  userBankId    Int
+  userBank      UserBank      @relation(fields: [userBankId], references: [id])
+  amount        Float
+  paymentMethod String
+  paymentStatus PaymentStatus
+  donationDate  DateTime      @default(now())
 }
