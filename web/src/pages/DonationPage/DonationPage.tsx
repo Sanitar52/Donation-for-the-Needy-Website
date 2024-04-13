@@ -184,6 +184,7 @@ const DonationPage = () => {
       });
 
       toast.success('Donation created', { duration: 5000 });
+
     }
     catch (error) {
       console.error('Failed to donate:', error);

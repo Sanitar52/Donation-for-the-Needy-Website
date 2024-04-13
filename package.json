@@ -15,6 +15,9 @@
     "extends": "@redwoodjs/eslint-config",
     "root": true
   },
+  "tsconfig": "*",
+  "eslint-config-custom": "*",
+
   "engines": {
     "node": "=20.x",
     "yarn": ">=1.15"
@@ -23,4 +26,5 @@
     "seed": "yarn rw exec seed"
   },
   "packageManager": "yarn@1.22.22"
+
 }
