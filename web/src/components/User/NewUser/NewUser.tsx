@@ -4,12 +4,13 @@ import type {
   CreateUserMutationVariables,
 } from 'types/graphql'
 
-import { navigate, routes } from '@redwoodjs/router'
+import { Link, navigate, routes } from '@redwoodjs/router'
 import { useMutation } from '@redwoodjs/web'
 import type { TypedDocumentNode } from '@redwoodjs/web'
 import { toast } from '@redwoodjs/web/toast'
 
 import UserForm from 'src/components/User/UserForm'
+import { Breadcrumbs } from '@mui/material'
 
 const CREATE_USER_MUTATION: TypedDocumentNode<
   CreateUserMutation,
@@ -38,6 +39,8 @@ const NewUser = () => {
   }
 
   return (
+    <>
+
     <div className="rw-segment">
       <header className="rw-segment-header">
         <h2 className="rw-heading rw-heading-secondary">New User</h2>
@@ -46,6 +49,7 @@ const NewUser = () => {
         <UserForm onSave={onSave} loading={loading} error={error} />
       </div>
     </div>
+    </>
   )
 }
 

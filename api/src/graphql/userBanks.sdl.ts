@@ -8,8 +8,8 @@ export const schema = gql`
   }
 
   type Query {
-    userBanks: [UserBank!]! @requireAuth
-    userBank(id: Int!): UserBank @requireAuth
+    userBanks: [UserBank!]! @skipAuth
+    userBank(id: Int!): UserBank @skipAuth
     userBanksByUserId(userId: Int!): [UserBank!]! @skipAuth
   }
 
@@ -25,10 +25,15 @@ export const schema = gql`
     balance: Float
   }
 
+  input UpdateUserBankBalanceInput {
+    balance: Float!
+  }
+
   type Mutation {
-    createUserBank(input: CreateUserBankInput!): UserBank! @requireAuth
+    createUserBank(input: CreateUserBankInput!): UserBank! @skipAuth
     updateUserBank(id: Int!, input: UpdateUserBankInput!): UserBank!
-      @requireAuth
+      @skipAuth
+    updateUserBankBalance(id: Int!, balance: Float!): UserBank! @skipAuth
     deleteUserBank(id: Int!): UserBank! @requireAuth
   }
 `

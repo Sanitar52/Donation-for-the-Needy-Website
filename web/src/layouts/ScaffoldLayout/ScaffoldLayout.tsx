@@ -1,4 +1,5 @@
-import { Link, routes } from '@redwoodjs/router'
+import { Breadcrumbs } from '@mui/material'
+import { Link, routes, useMatch, useParams, useLocation } from '@redwoodjs/router'
 import { Toaster } from '@redwoodjs/web/toast'
 
 type LayoutProps = {
@@ -16,15 +17,17 @@ const ScaffoldLayout = ({
   buttonTo,
   children,
 }: LayoutProps) => {
+  const currentLocation = useLocation()
+  const a = currentLocation.pathname.startsWith('/users') ? 'Users' : 'Institutions'
+  const b = currentLocation.pathname.endsWith('/new') ? 'New' : currentLocation.pathname.endsWith('/edit') ? 'Edit' : /\d$/.test(currentLocation.pathname) ? 'Details' : ''
   return (
-    <div className="rw-scaffold">
+    <div className="rw-scaffold mt-24">
       <Toaster toastOptions={{ className: 'rw-toast', duration: 6000 }} />
       <header className="rw-header">
-        <h1 className="rw-heading rw-heading-primary">
-          <Link to={routes[titleTo]()} className="rw-link">
-            {title}
-          </Link>
-        </h1>
+        <Breadcrumbs className="" aria-label="breadcrumb">
+          <Link className='text-2xl' to={a == 'Users' ? routes.users() : routes.institutions()}>{a}</Link>
+          { b != '' &&  <span className='text-2xl'>{ b }</span>}
+        </Breadcrumbs>
         <Link to={routes[buttonTo]()} className="rw-button rw-button-green">
           <div className="rw-button-icon">+</div> {buttonLabel}
         </Link>

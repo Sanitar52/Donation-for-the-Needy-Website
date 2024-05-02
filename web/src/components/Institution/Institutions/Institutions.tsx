@@ -54,6 +54,7 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
             <th>Description</th>
             <th>Contact information</th>
             <th>Logo</th>
+            <th>Balance</th>
             <th>Created at</th>
             <th>Updated at</th>
             <th>&nbsp;</th>
@@ -67,6 +68,7 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
               <td>{truncate(institution.description)}</td>
               <td>{truncate(institution.contactInformation)}</td>
               <td>{truncate(institution.logo)}</td>
+              <td>{truncate(institution.balance)}</td>
               <td>{timeTag(institution.createdAt)}</td>
               <td>{timeTag(institution.updatedAt)}</td>
               <td>

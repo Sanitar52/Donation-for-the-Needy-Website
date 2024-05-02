@@ -45,6 +45,7 @@ const UsersList = ({ users }: FindUsers) => {
   }
 
   return (
+    <>
     <div className="rw-segment rw-table-wrapper-responsive">
       <table className="rw-table">
         <thead>
@@ -62,7 +63,12 @@ const UsersList = ({ users }: FindUsers) => {
           {users.map((user) => (
             <tr key={user.id}>
               <td>{truncate(user.id)}</td>
-              <td>{truncate(user.name)}</td>
+              <td className="flex items-center">
+              <div className="relative w-10 h-10 inline-flex overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+                <svg className="absolute w-12 h-12 text-gray-400 -left-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+              </div>
+                {truncate(user.name)}
+              </td>
               <td>{truncate(user.age)}</td>
               <td>{truncate(user.email)}</td>
               <td>{timeTag(user.createdAt)}</td>
@@ -98,6 +104,7 @@ const UsersList = ({ users }: FindUsers) => {
         </tbody>
       </table>
     </div>
+    </>
   )
 }
 

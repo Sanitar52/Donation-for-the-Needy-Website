@@ -33,10 +33,10 @@ describe('institutions', () => {
 
   scenario('creates a institution', async () => {
     const result = await createInstitution({
-      input: { updatedAt: '2024-03-27T12:05:58.014Z' },
+      input: { updatedAt: '2024-05-01T15:30:18.296Z' },
     })
 
-    expect(result.updatedAt).toEqual(new Date('2024-03-27T12:05:58.014Z'))
+    expect(result.updatedAt).toEqual(new Date('2024-05-01T15:30:18.296Z'))
   })
 
   scenario('updates a institution', async (scenario: StandardScenario) => {
@@ -45,10 +45,10 @@ describe('institutions', () => {
     })) as Institution
     const result = await updateInstitution({
       id: original.id,
-      input: { updatedAt: '2024-03-28T12:05:58.014Z' },
+      input: { updatedAt: '2024-05-02T15:30:18.296Z' },
     })
 
-    expect(result.updatedAt).toEqual(new Date('2024-03-28T12:05:58.014Z'))
+    expect(result.updatedAt).toEqual(new Date('2024-05-02T15:30:18.296Z'))
   })
 
   scenario('deletes a institution', async (scenario: StandardScenario) => {

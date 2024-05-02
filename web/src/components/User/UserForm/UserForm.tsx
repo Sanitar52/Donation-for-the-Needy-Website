@@ -11,8 +11,9 @@ import {
   Submit,
   set,
 } from '@redwoodjs/forms'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation } from '@redwoodjs/web'
+import { Button } from '@mui/material'
 
 type FormUser = NonNullable<EditUserById['user']>
 
@@ -33,91 +34,37 @@ const CREATE_BANK_MUTATION = gql`
   }
 `;
 
-const AddBankModal = ({ isOpen, onClose, onSave, userId }) => {
-  const [name, setName] = useState('');
-  const [balance, setBalance] = useState('');
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = async () => {
-    if (name.trim() !== '' && balance) {
-      await onSave({ userId, name, balance: parseFloat(balance) });
-      setShowSuccessMessage(true);
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-        onClose();
-      }, 3000);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-10 overflow-y-auto">
-      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-
-        {/* This element is to trick the browser into centering the modal contents. */}
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="sm:flex sm:items-start">
-              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-              {showSuccessMessage && (
-              <div className="text-lg text-green-600 w-full text-center">
-                Bank added successfully!
-              </div>
-            )}
-                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                  Add New Bank
-                </h3>
-                <div className="mt-2">
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="mt-1 p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700">Balance</label>
-                    <input
-                      type="number"
-                      value={balance}
-                      onChange={(e) => setBalance(e.target.value)}
-                      className="mt-1 p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-
-            <button type="button" onClick={handleSubmit} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-              Submit
-            </button>
-            <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 const UserForm = (props: UserFormProps) => {
   const [isLoading, setIsLoading] = useState(false)
+  const [userBanks, setUserBanks] = useState([])
+  useEffect(() => {
+    if (props.user?.user_bank) {
+      setUserBanks(props.user.user_bank)
+    }
+  }, [])
+
   const onSubmit = (data: FormUser) => {
-    props.onSave(data, props?.user?.id)
+    //data.user_banks = userBanks.map((bank, index) => ({...bank, index}))
+    let new_data = {
+      age: data.age,
+      email: data.email,
+      name: data.name,
+      user_banks: userBanks.map((bank) => ({
+        name: bank.name,
+        balance: bank.balance
+      }))
+    }
+    console.log(new_data)
+    props.onSave(new_data, props?.user?.id)
   }
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
+  const onEnterBank = () => {
+    setUserBanks([...userBanks, { name: '', balance: ''}])
+
+    console.log('abc');
+  }
   const [createBank] = useMutation<
     CreateUserBankInput,
     CreateUserBankInputVariables>
@@ -202,10 +149,71 @@ const UserForm = (props: UserFormProps) => {
         />
 
         <FieldError name="email" className="rw-field-error" />
+        { userBanks.length!== 0 && <div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Banks</h3>
+          <table className="table-auto">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Balance</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {userBanks.map((bank, index) => (
+                <tr key={index}>
+                  <td>
+                    <TextField
+                    value={bank.name}
+                      name={`user_banks[${index}].name`}
+                      defaultValue={bank.name}
+                      className="rw-input"
+                      errorClassName="rw-input rw-input-error"
+                      validation={{ required: true }}
+                      onChange={(e)=> {
+                        setUserBanks(prev=> {
+                          const newBanks = [...prev]
+                          newBanks[index].name = e.target.value
+                          return newBanks
+                        })
+                      }}
+                    />
+                    <FieldError name={`user_banks[${index}].name`} className="rw-field-error" />
+                  </td>
+                  <td>
+                    <NumberField
+                    value={bank.balance}
+                      name={`user_banks[${index}].balance`}
+                      defaultValue={bank.balance}
+                      className="rw-input"
+                      errorClassName="rw-input rw-input-error"
+                      validation={{ required: true }}
+                      onChange={(e)=> {
+                        setUserBanks(prev=> {
+                          const newBanks = [...prev]
+                          newBanks[index].balance = parseFloat(e.target.value)
+                          return newBanks
+                        })
+                      }}
+
+                    />
+                    <FieldError name={`user_banks[${index}].balance`} className="rw-field-error" />
+                  </td>
+                  <td><Button variant='contained' color="error" onClick={()=> {
+                    const banks = [...userBanks]
+                    banks.splice(index, 1)
+                    setUserBanks(banks)
+                  }}>delete</Button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>}
+
         <div className="mb-12">
         <button
           type="button"
-          onClick={() => setIsAddBankModalOpen(true)}
+          onClick={() => onEnterBank()}
           className="rw-button rw-button-blue"
         >
           Add New Bank
@@ -218,12 +226,7 @@ const UserForm = (props: UserFormProps) => {
           </Submit>
         </div>
       </Form>
-      <AddBankModal
-      isOpen={isAddBankModalOpen}
-      onClose={() => setIsAddBankModalOpen(false)}
-      onSave={handleAddBank}
-      userId={props.user?.id}
-    />
+
     </div>
   )
 }

@@ -16,11 +16,6 @@ export const QUERY: TypedDocumentNode<FindUsers, FindUsersVariables> = gql`
       name
       age
       email
-      user_bank {
-        id
-        name
-
-      }
       donations {
         id
       }

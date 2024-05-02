@@ -22,6 +22,7 @@ export const QUERY: TypedDocumentNode<
       description
       contactInformation
       logo
+      balance
       createdAt
       updatedAt
     }

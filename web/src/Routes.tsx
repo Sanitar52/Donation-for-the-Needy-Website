@@ -9,11 +9,15 @@
 
 import { Set, Router, Route } from '@redwoodjs/router'
 
+import HeaderLayout from 'src/layouts/HeaderLayout'
+
 import ScaffoldLayout from 'src/layouts/ScaffoldLayout'
 
 const Routes = () => {
   return (
     <Router>
+      <Set wrap={HeaderLayout}>
+      <Route path="/past-donations" page={PastDonationsPage} name="pastDonations" />
       <Route path="/donation" page={DonationPage} name="donation" />
       <Set wrap={ScaffoldLayout} title="Users" titleTo="users" buttonLabel="New User" buttonTo="newUser">
         <Route path="/users/new" page={UserNewUserPage} name="newUser" />
@@ -28,6 +32,7 @@ const Routes = () => {
         <Route path="/institutions" page={InstitutionInstitutionsPage} name="institutions" />
       </Set>
       <Route path="/" page={HomePage} name="home" />
+      </Set>
       <Route notfound page={NotFoundPage} />
     </Router>
   )

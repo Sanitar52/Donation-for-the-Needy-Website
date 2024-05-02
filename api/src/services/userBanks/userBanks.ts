@@ -24,6 +24,17 @@ export const createUserBank: MutationResolvers['createUserBank'] = ({
   })
 }
 
+
+export const updateUserBankBalance: MutationResolvers['updateUserBankBalance'] = ({
+  id,
+  balance,
+}) => {
+  return db.userBank.update({
+    data: { balance },
+    where: { id },
+  })
+}
+
 export const updateUserBank: MutationResolvers['updateUserBank'] = ({
   id,
   input,
@@ -33,6 +44,7 @@ export const updateUserBank: MutationResolvers['updateUserBank'] = ({
     where: { id },
   })
 }
+
 
 export const userBanksByUserId: QueryResolvers['userBanksByUserId'] = ({
   userId,

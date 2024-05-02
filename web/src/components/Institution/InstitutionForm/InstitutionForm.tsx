@@ -102,6 +102,24 @@ const InstitutionForm = (props: InstitutionFormProps) => {
 
         <FieldError name="logo" className="rw-field-error" />
 
+        <Label
+          name="balance"
+          className="rw-label"
+          errorClassName="rw-label rw-label-error"
+        >
+          Balance
+        </Label>
+
+        <TextField
+          name="balance"
+          defaultValue={props.institution?.balance}
+          className="rw-input"
+          errorClassName="rw-input rw-input-error"
+          validation={{ valueAsNumber: true, required: true }}
+        />
+
+        <FieldError name="balance" className="rw-field-error" />
+
         <div className="rw-button-group">
           <Submit disabled={props.loading} className="rw-button rw-button-blue">
             Save

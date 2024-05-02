@@ -74,6 +74,10 @@ const Institution = ({ institution }: Props) => {
               <td>{institution.logo}</td>
             </tr>
             <tr>
+              <th>Balance</th>
+              <td>{institution.balance}</td>
+            </tr>
+            <tr>
               <th>Created at</th>
               <td>{timeTag(institution.createdAt)}</td>
             </tr>

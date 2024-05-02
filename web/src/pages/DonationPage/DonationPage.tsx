@@ -38,9 +38,49 @@ const GET_BANK_ACCOUNTS_BY_USER_ID = gql`
     userBanksByUserId(userId: $userId) {
       id
       name
+      balance
     }
   }
 `;
+const UPDATE_USER_BANK_BALANCE = gql`
+  mutation UpdateUserBankBalance($id: Int!, $balance: Float!) {
+    updateUserBankBalance(id: $id, balance: $balance) {
+      id
+      balance
+    }
+  }
+`;
+const UPDATE_INSTITUTION_BALANCE = gql`
+  mutation UpdateInstitutionBalance($id: Int!, $balance: Float!) {
+    updateInstitutionBalance(id: $id, balance: $balance) {
+      id
+      balance
+    }
+  }
+`;
+const ConfirmationModal = ({ isOpen, onConfirm, onCancel, details }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center px-4">
+      <div className="bg-white rounded-lg max-w-sm mx-auto p-6 space-y-4">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">Confirm Donation</h3>
+        <p className="text-sm text-gray-500">
+          Are you sure you want to donate {details.amount} to {details.institutionName}?
+        </p>
+        <div className="flex justify-end space-x-3">
+          <button onClick={onCancel} className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded focus:outline-none">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
   const [userId, setUserId] = useState<Number>();
   const [user, setUser] = useState<any>('');
@@ -62,6 +102,7 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
       setUserNameList(userData.users.map((user) => user.name));
     }
   }, [userData]);
+
 
 
   const onUserChange = (userName) => {
@@ -144,6 +185,10 @@ const DonationPage = () => {
   const [user, setUser] = useState<any>('');
   const [bankAccount, setBankAccount] = useState<any>('');
   const [bankAccountId, setBankAccountId] = useState<Number>();
+  const [selectedBankAccountBalance, setSelectedBankAccountBalance] = useState<Number>();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmDetails, setConfirmDetails] = useState({ amount: '', institutionName: '' });
+  const [selectedInstitutionBalance, setSelectedInstitutionBalance] = useState<Number>();
 
   const { loading: loadingInstitutionsData, error: institutionErrorData, data: institutionsData } = useQuery(GET_INSTITUTIONS);
   const { loading: loadingUserData, error: userErrorData, data: userData } = useQuery(GET_USERS);
@@ -159,20 +204,49 @@ const DonationPage = () => {
     setUserId(userDetails.id);
     const bankAccountDetails = userBankData?.userBanksByUserId.find((bank) => bank.name === bankAccountName);
     setBankAccountId(bankAccountDetails.id);
+    setSelectedBankAccountBalance(bankAccountDetails.balance);
   }
 
+
+
+  const [updateUserBankBalance] = useMutation(UPDATE_USER_BANK_BALANCE);
+  const [updateInstitutionBalance] = useMutation(UPDATE_INSTITUTION_BALANCE);
   const [createDonation] = useMutation<
     CreateDonationInput,
     CreateDonationInputVariables>
     (CREATE_DONATION_MUTATION);
   const onSubmit: SubmitHandler<CreateDonationInput> = async () => {
     setIsLoading(true);
+    if (selectedInstitution === '' || selectedPaymentMethod === '' || amount === '') {
+      toast.error('Lütfen eksik alanları doldurunuz');
+      setIsLoading(false);
+      return;
+    }
+    if (selectedBankAccountBalance.valueOf() < parseFloat(amount)) {
+      toast.error('Yetersiz bakiye');
+      setIsLoading(false);
+      return;
+    }
+    const institutionName = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution))?.name || '';
+    // Set selected institution's balance
+    const institutionBalance = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution))?.balance || 0;
+    setSelectedInstitutionBalance(institutionBalance);
+
+    setConfirmDetails({ amount, institutionName });
+    setShowConfirmation(true);
     const institutionId: number = parseInt(selectedInstitution.toString())
+
+  };
+  const handleConfirmDonation = async () => {
+    setShowConfirmation(false);
+    setIsLoading(true);
+
     try {
+      const institutionId = parseInt(selectedInstitution);
       await createDonation({
         variables: {
           input: {
-            institutionId: institutionId,
+            institutionId,
             userId: userId,
             userBankId: bankAccountId,
             amount: parseFloat(amount),
@@ -183,14 +257,35 @@ const DonationPage = () => {
         },
       });
 
-      toast.success('Donation created', { duration: 5000 });
+      toast.success('Donation created successfully', { duration: 5000 });
+      // Update the user bank balance
+      const updatedBalance = Number(selectedBankAccountBalance) - parseFloat(amount);
 
-    }
-    catch (error) {
+      await updateUserBankBalance({
+        variables: {
+          id: bankAccountId,
+          balance: updatedBalance,
+        },
+      });
+      const updatedInstitutionBalance = Number(selectedInstitutionBalance) + parseFloat(amount);
+      await updateInstitutionBalance({
+        variables: {
+          id: institutionId,
+          balance: updatedInstitutionBalance,
+        },
+      });
+
+      // Update the institution balance
+      setSelectedInstitution('');
+      setSelectedPaymentMethod('');
+      setAmount('');
+
+
+
+    } catch (error) {
       console.error('Failed to donate:', error);
       toast.error('Failed to donate');
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -206,8 +301,8 @@ const DonationPage = () => {
 
       <div className="min-h-screen bg-yellow-500">
         <div className="max-w-full mx-auto rounded-full">
-          <div className="bg-white p-6 rounded-lg shadow-2xl ">
-            <h2 className="text-2xl font-bold text-gray-800 text-center">Donation</h2>
+          <div className="bg-white rounded-lg shadow-2xl ">
+            <h2 className="text-2xl font-bold text-gray-800 text-center">Donation Menu</h2>
           </div>
         </div>
 
@@ -277,6 +372,13 @@ const DonationPage = () => {
           setIsPaymentMethodModalOpen(false);
         }}
       />
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onConfirm={handleConfirmDonation}
+        onCancel={() => setShowConfirmation(false)}
+        details={confirmDetails}
+/>
+
     </>
   );
 };

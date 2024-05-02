@@ -9,6 +9,10 @@ export const schema = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
   }
+  input userBankInput {
+    name: String
+    balance: Float
+  }
 
   type Query {
     users: [User!]! @requireAuth
@@ -19,12 +23,14 @@ export const schema = gql`
     name: String
     age: Int
     email: String!
+    user_banks: [userBankInput!]
   }
 
   input UpdateUserInput {
     name: String
     age: Int
     email: String
+    user_banks: [userBankInput!]
   }
 
   type Mutation {

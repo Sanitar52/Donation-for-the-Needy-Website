@@ -34,6 +34,16 @@ export const updateInstitution: MutationResolvers['updateInstitution'] = ({
   })
 }
 
+export const updateInstitutionBalance: MutationResolvers['updateInstitutionBalance'] = ({
+  id,
+  balance,
+}) => {
+  return db.institution.update({
+    data: { balance },
+    where: { id },
+  })
+}
+
 export const deleteInstitution: MutationResolvers['deleteInstitution'] = ({
   id,
 }) => {

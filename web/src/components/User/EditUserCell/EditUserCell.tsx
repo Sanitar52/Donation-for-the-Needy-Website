@@ -4,7 +4,7 @@ import type {
   UpdateUserMutationVariables,
 } from 'types/graphql'
 
-import { navigate, routes } from '@redwoodjs/router'
+import { Link, navigate, routes } from '@redwoodjs/router'
 import type {
   CellSuccessProps,
   CellFailureProps,
@@ -14,6 +14,7 @@ import { useMutation } from '@redwoodjs/web'
 import { toast } from '@redwoodjs/web/toast'
 
 import UserForm from 'src/components/User/UserForm'
+import { Breadcrumbs } from '@mui/material'
 
 export const QUERY: TypedDocumentNode<EditUserById> = gql`
   query EditUserById($id: Int!) {
@@ -22,6 +23,10 @@ export const QUERY: TypedDocumentNode<EditUserById> = gql`
       name
       age
       email
+      user_bank{
+        name
+        balance
+      }
       createdAt
       updatedAt
     }
@@ -59,6 +64,7 @@ export const Success = ({ user }: CellSuccessProps<EditUserById>) => {
     onError: (error) => {
       toast.error(error.message)
     },
+    refetchQueries: [{ query: QUERY, variables: { id: user?.id } }],
   })
 
   const onSave = (input: UpdateUserInput, id: EditUserById['user']['id']) => {
@@ -66,6 +72,7 @@ export const Success = ({ user }: CellSuccessProps<EditUserById>) => {
   }
 
   return (
+    <>
     <div className="rw-segment">
       <header className="rw-segment-header">
         <h2 className="rw-heading rw-heading-secondary">
@@ -76,5 +83,6 @@ export const Success = ({ user }: CellSuccessProps<EditUserById>) => {
         <UserForm user={user} onSave={onSave} error={error} loading={loading} />
       </div>
     </div>
+    </>
   )
 }

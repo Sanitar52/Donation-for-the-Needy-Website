@@ -3,8 +3,7 @@ import type {
   UpdateInstitutionInput,
   UpdateInstitutionMutationVariables,
 } from 'types/graphql'
-
-import { navigate, routes } from '@redwoodjs/router'
+import { Link, navigate, routes } from '@redwoodjs/router'
 import type {
   CellSuccessProps,
   CellFailureProps,
@@ -23,6 +22,7 @@ export const QUERY: TypedDocumentNode<EditInstitutionById> = gql`
       description
       contactInformation
       logo
+      balance
       createdAt
       updatedAt
     }
@@ -43,6 +43,7 @@ const UPDATE_INSTITUTION_MUTATION: TypedDocumentNode<
       description
       contactInformation
       logo
+      balance
       createdAt
       updatedAt
     }
@@ -79,6 +80,7 @@ export const Success = ({
   }
 
   return (
+    <>
     <div className="rw-segment">
       <header className="rw-segment-header">
         <h2 className="rw-heading rw-heading-secondary">
@@ -94,5 +96,6 @@ export const Success = ({
         />
       </div>
     </div>
+    </>
   )
 }

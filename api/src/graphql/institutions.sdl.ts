@@ -6,6 +6,7 @@ export const schema = gql`
     description: String
     contactInformation: String
     logo: String
+    balance: Float!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -20,6 +21,7 @@ export const schema = gql`
     description: String
     contactInformation: String
     logo: String
+    balance: Float!
   }
 
   input UpdateInstitutionInput {
@@ -27,12 +29,18 @@ export const schema = gql`
     description: String
     contactInformation: String
     logo: String
+    balance: Float
+  }
+
+  input UpdateInstitutionBalanceInput {
+    balance: Float!
   }
 
   type Mutation {
     createInstitution(input: CreateInstitutionInput!): Institution! @requireAuth
     updateInstitution(id: Int!, input: UpdateInstitutionInput!): Institution!
       @requireAuth
+    updateInstitutionBalance(id: Int!, balance: Float!): Institution! @requireAuth
     deleteInstitution(id: Int!): Institution! @requireAuth
   }
 `
