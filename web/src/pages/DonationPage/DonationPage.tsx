@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { CreateDonationInput, CreateDonationInputVariables } from 'types/graphql';
 import UsersCell from 'src/components/User/UsersCell';
 import { toast, Toast, Toaster, useToaster } from '@redwoodjs/web/dist/toast';
+import donatebg2 from '../../../public/donatebg2.png';
 
 const GET_INSTITUTIONS = gql`
   query FindInstitutions {
     institutions {
       id
       name
+      logo
     }
   }
 `;
@@ -80,6 +82,47 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, details }) => {
     </div>
   );
 };
+const OrganisationModal = ({ isOpen, onClose, onConfirm }) => {
+  const { loading, error, data } = useQuery(GET_INSTITUTIONS);
+
+  if (!isOpen) return null;
+  if (loading) return <div>Loading institutions...</div>;
+  if (error) return <div>Error loading institutions: {error.message}</div>;
+
+  const handleChooseInstitution = (institutionId) => {
+    onConfirm(institutionId);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="mt-3 text-center">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Select Institution</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {data.institutions.map((institution) => (
+              <div key={institution.id} className="bg-white p-4 shadow rounded-lg flex flex-col items-center gap-2">
+                  <img src={institution.logo} alt={institution.name} className="h-20 w-20 object-cover rounded-full" />
+                  <h5 className="text-lg font-medium text-gray-900">{institution.name}</h5>
+                  <button
+                    className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-auto"
+                    onClick={() => handleChooseInstitution(institution.id)}
+                  >
+                    Choose
+                  </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <button onClick={onClose} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
   const [userId, setUserId] = useState<Number>();
@@ -136,7 +179,14 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
           <h3 className="text-lg leading-6 font-medium text-gray-900">Select Payment Method</h3>
           <div className="mt-2">
             {/* User Type Dropdown */}
-            <select value={user} onChange={(e) => onUserChange(e.target.value)} className="block w-full p-3 mt-2 border border-gray-300 rounded shadow-sm">
+            <select value={user} onChange={(e) =>{
+              setBankAccount(null);
+              if (e.target.value === "Select Which User You Are") {
+                setUser(null);
+
+                return;
+              }
+              onUserChange(e.target.value)}} className="block w-full p-3 mt-2 border border-gray-300 rounded shadow-sm">
               <option>Select Which User You Are</option>
               {userNameList &&
                 userNameList.map((name) => (
@@ -147,7 +197,14 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
 
             </select>
             {/* Bank Account Dropdown */}
-            <select value={bankAccount} onChange={(e) => { setBankAccount(e.target.value), onBankAccountChange(e.target.value) }} className="block w-full p-3 mt-2 border border-gray-300 rounded shadow-sm">
+            <select value={bankAccount} onChange={(e) => {
+              if (e.target.value === "Select Bank Account") {
+                setBankAccount(null);
+                return;
+              };
+              setBankAccount(e.target.value),
+              onBankAccountChange(e.target.value)
+              }} className="block w-full p-3 mt-2 border border-gray-300 rounded shadow-sm">
               <option>Select Bank Account</option>
               {userBankAccountList &&
                 userBankAccountList.map((bank) => (
@@ -159,8 +216,10 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
             </select>
           </div>
           <div className="items-center px-4 py-3">
-            <button id="ok-btn" onClick={() => onConfirm(user, bankAccount)} className="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2">
-              Confirm
+            <button id="ok-btn" onClick={() => onConfirm(user, bankAccount)} disabled={!user || !bankAccount} className="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2"
+
+            >
+              {!user || !bankAccount ? 'NOOOO' : 'Confirm'}
             </button>
           </div>
           <div className="items-center px-4 py-3">
@@ -175,36 +234,53 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
 };
 
 const DonationPage = () => {
-  const [selectedInstitution, setSelectedInstitution] = useState('');
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<Number>();
+  const [selectedInstitution, setSelectedInstitution] = useState({ id: '', name: '' });
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [amount, setAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPaymentMethodModalOpen, setIsPaymentMethodModalOpen] = useState(false);
+  const [isOrganisationModalOpen, setIsOrganisationModalOpen] = useState(false);
   const [userId, setUserId] = useState<Number>();
-  const [user, setUser] = useState<any>('');
-  const [bankAccount, setBankAccount] = useState<any>('');
   const [bankAccountId, setBankAccountId] = useState<Number>();
   const [selectedBankAccountBalance, setSelectedBankAccountBalance] = useState<Number>();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmDetails, setConfirmDetails] = useState({ amount: '', institutionName: '' });
   const [selectedInstitutionBalance, setSelectedInstitutionBalance] = useState<Number>();
+  const [bankAccountName, setBankAccountName] = useState('');
+
 
   const { loading: loadingInstitutionsData, error: institutionErrorData, data: institutionsData } = useQuery(GET_INSTITUTIONS);
   const { loading: loadingUserData, error: userErrorData, data: userData } = useQuery(GET_USERS);
-
   const { loading: loadingUserBankData, error: userBankErrorData, data: userBankData } = useQuery(GET_BANK_ACCOUNTS_BY_USER_ID, {
     variables: { userId: userId },
     skip: !userId,
   });
 
+  useEffect(() => {
+    console.log("here")
+    console.log(userBankData)
+      if (userBankData) {
+      const bankAccountDetails = userBankData?.userBanksByUserId.find((bank) => bank.name === bankAccountName);
+      console.log(userBankData?.userBanksByUserId)
+      setBankAccountId(bankAccountDetails.id);
+      setSelectedBankAccountBalance(bankAccountDetails.balance);
+      console.log(bankAccountDetails.balance)
+      }
+  },[userId, bankAccountName]);
+
 
   const setUserIdAndBankAccountId = (userName: string, bankAccountName: string) => {
+    console.log(userData?.users)
+    console.log(userName)
     const userDetails = userData?.users.find((u) => u.name === userName);
     setUserId(userDetails.id);
-    const bankAccountDetails = userBankData?.userBanksByUserId.find((bank) => bank.name === bankAccountName);
+    setBankAccountName(bankAccountName);
+    /*const bankAccountDetails = userBankData?.userBanksByUserId.find((bank) => bank.name === bankAccountName);
+    console.log(userBankData?.userBanksByUserId)
+    console.log(bankAccountDetails)
     setBankAccountId(bankAccountDetails.id);
-    setSelectedBankAccountBalance(bankAccountDetails.balance);
+    setSelectedBankAccountBalance(bankAccountDetails.balance);*/
   }
 
 
@@ -217,7 +293,7 @@ const DonationPage = () => {
     (CREATE_DONATION_MUTATION);
   const onSubmit: SubmitHandler<CreateDonationInput> = async () => {
     setIsLoading(true);
-    if (selectedInstitution === '' || selectedPaymentMethod === '' || amount === '') {
+    if (selectedInstitution.name === 'Select an institution' || selectedPaymentMethod === '' || amount === '') {
       toast.error('Lütfen eksik alanları doldurunuz');
       setIsLoading(false);
       return;
@@ -227,9 +303,9 @@ const DonationPage = () => {
       setIsLoading(false);
       return;
     }
-    const institutionName = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution))?.name || '';
+    const institutionName = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution.id))?.name || '';
     // Set selected institution's balance
-    const institutionBalance = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution))?.balance || 0;
+    const institutionBalance = institutionsData?.institutions.find(inst => inst.id === parseFloat(selectedInstitution.id))?.balance || 0;
     setSelectedInstitutionBalance(institutionBalance);
 
     setConfirmDetails({ amount, institutionName });
@@ -242,7 +318,7 @@ const DonationPage = () => {
     setIsLoading(true);
 
     try {
-      const institutionId = parseInt(selectedInstitution);
+      const institutionId = parseInt(selectedInstitution.id.toString());
       await createDonation({
         variables: {
           input: {
@@ -276,7 +352,7 @@ const DonationPage = () => {
       });
 
       // Update the institution balance
-      setSelectedInstitution('');
+      setSelectedInstitution({ id: '', name: '' });
       setSelectedPaymentMethod('');
       setAmount('');
 
@@ -299,32 +375,24 @@ const DonationPage = () => {
     <>
       <MetaTags title="Donation" description="Donation page" />
 
-      <div className="min-h-screen bg-yellow-500">
-        <div className="max-w-full mx-auto rounded-full">
-          <div className="bg-white rounded-lg shadow-2xl ">
-            <h2 className="text-2xl font-bold text-gray-800 text-center">Donation Menu</h2>
-          </div>
-        </div>
+      <div
+        className="min-h-screen bg-fixed bg-cover bg-center transition-all duration-300 relative justify-center items-center mt-48"
+        style={{ backgroundImage: `url(${donatebg2})` }}
+      >
 
         <Form onSubmit={onSubmit} className="flex flex-col items-center justify-center min-h-screen pt-0 pb-10 -mt-40 rounded-lg">
-          <div className="mb-6 w-full max-w-xs">
+          <div className="mb-6 w-full max-w-xs" onClick={() => setIsOrganisationModalOpen(true)}>
             <label htmlFor="selectedInstitution" className="block text-sm font-medium text-gray-700 mb-2 text-center">
               Organisation
             </label>
-            <select
+            <input
               name="institutionId"
               id="institutionId"
-              value={selectedInstitution}
-              onChange={(e) => { setSelectedInstitution(e.target.value); }}
+              readOnly
+              placeholder="Select an institution"
+              value={selectedInstitution.name} // Display institution name instead of ID
               className="block w-full p-3 border text-center border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:ring-yellow-500"
-            >
-              <option>Select an institution</option>
-              {institutionsData?.institutions?.map((institution) => (
-                <option key={institution.id} value={institution.id}>
-                  {institution.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="mb-6 w-full max-w-xs" onClick={() => setIsPaymentMethodModalOpen(true)}>
@@ -350,16 +418,30 @@ const DonationPage = () => {
               className="block w-full p-3 border text-center border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:ring-yellow-500"
               placeholder="0,00 TL"
             />
+
           </div>
+
+
+
           <Submit
             disabled={isLoading}
-            className={`${isLoading ? 'bg-gray-400 hover:bg-gray-400' : 'bg-white hover:bg-yellow-600'} mt-10 w-full max-w-md h-16 py-2 px-12 text-gray font-bold rounded focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50`}
+            className={`${isLoading ? 'bg-gray-400 hover:bg-gray-400' : 'bg-blue-600 hover:dark:bg-blue-800'} mt-10 w-full max-w-md h-16 py-2 px-12 text-gray font-bold rounded focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50`}
           >
             {isLoading ? 'Processing...' : 'Bağış Yap'}
           </Submit>
         </Form>
 
       </div>
+      <Toaster />
+      <OrganisationModal
+        isOpen={isOrganisationModalOpen}
+        onClose={() => setIsOrganisationModalOpen(false)}
+        onConfirm={(institutionId) => {
+          const institution = institutionsData.institutions.find(inst => inst.id === institutionId);
+          setSelectedInstitution({ id: institutionId.toString(), name: institution.name });
+          setIsOrganisationModalOpen(false);
+        }}
+      />
       <PaymentMethodModal
         isOpen={isPaymentMethodModalOpen}
         onClose={() => setIsPaymentMethodModalOpen(false)}
@@ -371,13 +453,17 @@ const DonationPage = () => {
           setUserIdAndBankAccountId(user, bankAccount);
           setIsPaymentMethodModalOpen(false);
         }}
+
       />
       <ConfirmationModal
         isOpen={showConfirmation}
         onConfirm={handleConfirmDonation}
-        onCancel={() => setShowConfirmation(false)}
+        onCancel={() => {
+          setIsLoading(false)
+          setShowConfirmation(false)
+        }}
         details={confirmDetails}
-/>
+      />
 
     </>
   );

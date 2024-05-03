@@ -53,7 +53,6 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
             <th>Name</th>
             <th>Description</th>
             <th>Contact information</th>
-            <th>Logo</th>
             <th>Balance</th>
             <th>Created at</th>
             <th>Updated at</th>
@@ -64,10 +63,15 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
           {institutions.map((institution) => (
             <tr key={institution.id}>
               <td>{truncate(institution.id)}</td>
-              <td>{truncate(institution.name)}</td>
+              <td className="flex items-center">
+              <div className="relative w-10 h-10 inline-flex overflow-hidden mx-3 bg-gray-100 rounded-lg dark:bg-gray-600">
+                <img className=" text-gray-400 -left-1" src={institution.logo}>
+                    </img>
+              </div>
+                {truncate(institution.name)}
+                </td>
               <td>{truncate(institution.description)}</td>
               <td>{truncate(institution.contactInformation)}</td>
-              <td>{truncate(institution.logo)}</td>
               <td>{truncate(institution.balance)}</td>
               <td>{timeTag(institution.createdAt)}</td>
               <td>{timeTag(institution.updatedAt)}</td>

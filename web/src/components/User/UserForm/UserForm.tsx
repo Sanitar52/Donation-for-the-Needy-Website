@@ -167,33 +167,40 @@ const UserForm = (props: UserFormProps) => {
                     value={bank.name}
                       name={`user_banks[${index}].name`}
                       defaultValue={bank.name}
+
                       className="rw-input"
                       errorClassName="rw-input rw-input-error"
                       validation={{ required: true }}
-                      onChange={(e)=> {
-                        setUserBanks(prev=> {
-                          const newBanks = [...prev]
-                          newBanks[index].name = e.target.value
-                          return newBanks
-                        })
+                      onChange={(e) => {
+                        setUserBanks((prev) => {
+                          return prev.map((bank, idx) => {
+                            if (idx === index) {
+                              return { ...bank, name: e.target.value };
+                            }
+                            return bank;
+                          });
+                        });
                       }}
                     />
                     <FieldError name={`user_banks[${index}].name`} className="rw-field-error" />
                   </td>
                   <td>
                     <NumberField
-                    value={bank.balance}
+                      value={bank.balance}
                       name={`user_banks[${index}].balance`}
                       defaultValue={bank.balance}
                       className="rw-input"
                       errorClassName="rw-input rw-input-error"
                       validation={{ required: true }}
-                      onChange={(e)=> {
-                        setUserBanks(prev=> {
-                          const newBanks = [...prev]
-                          newBanks[index].balance = parseFloat(e.target.value)
-                          return newBanks
-                        })
+                      onChange={(e) => {
+                        setUserBanks((prev) => {
+                          return prev.map((bank, idx) => {
+                            if (idx === index) {
+                              return { ...bank, balance: parseFloat(e.target.value) };
+                            }
+                            return bank;
+                          });
+                        });
                       }}
 
                     />

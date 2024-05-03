@@ -12,7 +12,8 @@ import {
 } from '@redwoodjs/forms';
 import { toast } from '@redwoodjs/web/dist/toast';
 import { CreateUserInput, CreateUserInputVariables, CreateInstitutionInput, CreateInstitutionInputVariables, } from 'types/graphql'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import bgmain5 from '../../../public/bgmain5.png';
 
 const CREATE_USER_MUTATION = gql`
   mutation CreateUserInput($input: CreateUserInput!) {
@@ -40,6 +41,22 @@ const HomePage = () => {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showPopup, setShowPopup] = useState<string | null>(null);
+  const backgroundRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (backgroundRef.current) {
+        const scrollTop = window.scrollY;
+        const backgroundOffset = scrollTop * 0.5; // Adjust the value to control the scrolling speed
+        backgroundRef.current.style.backgroundPositionY = `-${backgroundOffset}px`;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
   const openPopup = (formType: string) => {
     setShowPopup(formType);
   };
@@ -97,9 +114,14 @@ const HomePage = () => {
     console.log(data)
   }
 
+
   return (
     <>
-    <div className="min-h-screen bg-yellow-500">
+    <div
+        ref={backgroundRef}
+        className="min-h-screen bg-fixed bg-cover bg-center transition-all duration-300 relative"
+        style={{ backgroundImage: `url(${bgmain5})` }}
+      >
         {/*Make a HomePage navbar here on the top*/}
         <div className="max-w-full mx-auto rounded-full">
           <div className="bg-white p-6 rounded-lg shadow-2xl ">

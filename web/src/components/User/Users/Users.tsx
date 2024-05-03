@@ -93,7 +93,11 @@ const UsersList = ({ users }: FindUsers) => {
                     type="button"
                     title={'Delete user ' + user.id}
                     className="rw-button rw-button-small rw-button-red"
-                    onClick={() => onDeleteClick(user.id)}
+                    onClick={() => {
+                      console.log(user.id),
+                      onDeleteClick(user.id)
+
+                    }}
                   >
                     Delete
                   </button>

@@ -59,7 +59,13 @@ export const updateUser: MutationResolvers['updateUser'] = async ({ id, input })
   return user
 }
 
-export const deleteUser: MutationResolvers['deleteUser'] = ({ id }) => {
+export const deleteUser: MutationResolvers['deleteUser'] = async ({ id }) => {
+  await db.donation.deleteMany({
+    where: { userId: id },
+  })
+  await db.userBank.deleteMany({
+    where: { userId: id },
+  })
   return db.user.delete({
     where: { id },
   })
