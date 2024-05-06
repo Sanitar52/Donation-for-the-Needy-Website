@@ -16,6 +16,15 @@ export const institution: QueryResolvers['institution'] = ({ id }) => {
   })
 }
 
+export const topDonatedInstitutions: QueryResolvers['topDonatedInstitutions'] = () => {
+  return db.institution.findMany({
+    orderBy: {
+      balance: 'desc',
+    },
+    take: 5,
+  })
+}
+
 export const createInstitution: MutationResolvers['createInstitution'] = ({
   input,
 }) => {

@@ -22,6 +22,7 @@ export const schema = gql`
   type Query {
     donations: [Donation!]! @requireAuth
     donation(id: Int!): Donation @requireAuth
+    recentDonations: [Donation!]! @skipAuth
   }
 
   input CreateDonationInput {

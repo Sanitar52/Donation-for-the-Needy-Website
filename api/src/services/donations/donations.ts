@@ -7,12 +7,22 @@ import type {
 import { db } from 'src/lib/db'
 
 export const donations: QueryResolvers['donations'] = () => {
-  return db.donation.findMany()
+  return db.donation.findMany({})
 }
 
 export const donation: QueryResolvers['donation'] = ({ id }) => {
   return db.donation.findUnique({
     where: { id },
+  })
+}
+
+export const recentDonations: QueryResolvers['recentDonations'] = () => {
+  return db.donation.findMany({
+    include: { user: true, institution: true},
+    orderBy: {
+      donationDate: 'desc',
+    },
+    take: 5,
   })
 }
 

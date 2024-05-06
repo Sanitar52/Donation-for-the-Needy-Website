@@ -14,6 +14,8 @@ import { toast } from '@redwoodjs/web/dist/toast';
 import { CreateUserInput, CreateUserInputVariables, CreateInstitutionInput, CreateInstitutionInputVariables, } from 'types/graphql'
 import { useEffect, useRef, useState } from 'react';
 import bgmain5 from '../../../public/bgmain5.png';
+import TopDonatedInstitutionsCell from 'src/components/TopDonatedInstitutionsCell/'
+import RecentDonationCell from 'src/components/RecentDonationsCell';
 
 const CREATE_USER_MUTATION = gql`
   mutation CreateUserInput($input: CreateUserInput!) {
@@ -122,13 +124,19 @@ const HomePage = () => {
         className="min-h-screen bg-fixed bg-cover bg-center transition-all duration-300 relative"
         style={{ backgroundImage: `url(${bgmain5})` }}
       >
+
         {/*Make a HomePage navbar here on the top*/}
         <div className="max-w-full mx-auto rounded-full">
           <div className="bg-white p-6 rounded-lg shadow-2xl ">
             <h2 className="text-2xl font-bold text-gray-800 text-center">BAĞIŞ</h2>
           </div>
         </div>
+        <div className="py-12 mx-6">
+          <TopDonatedInstitutionsCell />
+        </div>
+
     <div className="flex flex-col items-center justify-center h-screen">
+
       <button
       onClick={() => openPopup('createUser')}
       className=" h-auto max-w-lg button-primary-lg mb-12 w-full justify-center  text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -221,6 +229,9 @@ const HomePage = () => {
     </svg>
       Past Donations
     </button>
+    </div>
+    <div className="py-12 mx-6">
+      <RecentDonationCell />
     </div>
     {showPopup && (
         <div className="fixed inset-0 z-60 flex items-center justify-center">

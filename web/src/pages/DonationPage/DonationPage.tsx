@@ -219,7 +219,7 @@ const PaymentMethodModal = ({ isOpen, onClose, onConfirm }) => {
             <button id="ok-btn" onClick={() => onConfirm(user, bankAccount)} disabled={!user || !bankAccount} className="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2"
 
             >
-              {!user || !bankAccount ? 'NOOOO' : 'Confirm'}
+              {!user || !bankAccount ? 'Fill to Continue' : 'Confirm'}
             </button>
           </div>
           <div className="items-center px-4 py-3">
@@ -238,6 +238,7 @@ const DonationPage = () => {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [amount, setAmount] = useState('');
+  const [amountError, setAmountError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPaymentMethodModalOpen, setIsPaymentMethodModalOpen] = useState(false);
   const [isOrganisationModalOpen, setIsOrganisationModalOpen] = useState(false);
@@ -292,7 +293,17 @@ const DonationPage = () => {
     CreateDonationInputVariables>
     (CREATE_DONATION_MUTATION);
   const onSubmit: SubmitHandler<CreateDonationInput> = async () => {
+    const amountValue = parseFloat(amount);
+    if (isNaN(amountValue) || amountValue <= 0) {
+      setAmountError(true);
+      toast.error('Please enter a positive amount greater than zero');
+      setIsLoading(false); // Stop the loading state
+      return; // Prevent form submission if validation fails
+    }
+
+    setAmountError(false);
     setIsLoading(true);
+
     if (selectedInstitution.name === 'Select an institution' || selectedPaymentMethod === '' || amount === '') {
       toast.error('Lütfen eksik alanları doldurunuz');
       setIsLoading(false);
@@ -404,22 +415,21 @@ const DonationPage = () => {
               placeholder="Select Payment Method"
             />
           </div>
-
           <div className="mb-6 w-full max-w-xs">
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2 text-center">
-              Amount
-            </label>
-            <input
-              type="text"
-              name="amount"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="block w-full p-3 border text-center border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:ring-yellow-500"
-              placeholder="0,00 TL"
-            />
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2 text-center">
+          Amount
+        </label>
+        <input
+          type="text"
+          name="amount"
+          id="amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)} // Just update the state here
+          className={`block w-full p-3 border text-center ${amountError ? 'border-red-500' : 'border-gray-300'} rounded shadow-sm focus:outline-none focus:ring focus:ring-yellow-500`}
+          placeholder="0,00 TL"
+        />
+      </div>
 
-          </div>
 
 
 

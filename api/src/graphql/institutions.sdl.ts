@@ -14,6 +14,7 @@ export const schema = gql`
   type Query {
     institutions: [Institution!]! @requireAuth
     institution(id: Int!): Institution @requireAuth
+    topDonatedInstitutions: [Institution!]! @skipAuth
   }
 
   input CreateInstitutionInput {

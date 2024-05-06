@@ -37,7 +37,7 @@ export const createUser: MutationResolvers['createUser'] = async ({ input }) => 
 }
 
 export const updateUser: MutationResolvers['updateUser'] = async ({ id, input }) => {
-  const user =await db.user.update({
+  const user = await db.user.update({
     data: {
       email: input.email,
       name: input.name,
@@ -45,6 +45,27 @@ export const updateUser: MutationResolvers['updateUser'] = async ({ id, input })
     },
     where: { id },
   })
+  const user_banks = await db.userBank.findMany({
+    where: { userId: id },
+  })
+  // I want to check if the new input user_banks names are different from the current user_banks names if they are not then I don't want to delete the user_banks and create new ones
+
+  const input_user_banks_names = input.user_banks.map((user_bank) => user_bank.name)
+  const current_user_banks_names = user_banks.map((user_bank) => user_bank.name)
+  // check if there is no change here
+  if (input_user_banks_names.length === current_user_banks_names.length && input_user_banks_names.every((name) => current_user_banks_names.includes(name))) {
+    return user
+  }
+
+
+    //Let the user know that if he deletes this then all the donations will be deleted
+
+
+    await db.donation.deleteMany({
+      where: { userId: id },
+    })
+
+
   await db.userBank.deleteMany({
     where: { userId: id },
   })
@@ -55,6 +76,9 @@ export const updateUser: MutationResolvers['updateUser'] = async ({ id, input })
       userId: user.id,
     })),
   })
+  // if there is a change then delete the current user_banks and create new ones and also remove donations and create new ones
+
+
 
   return user
 }
