@@ -11,6 +11,7 @@ export const schema = gql`
     paymentMethod: String!
     paymentStatus: PaymentStatus!
     donationDate: DateTime!
+
   }
 
   enum PaymentStatus {

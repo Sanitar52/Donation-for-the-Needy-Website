@@ -21,7 +21,13 @@ interface InstitutionFormProps {
 
 const InstitutionForm = (props: InstitutionFormProps) => {
   const onSubmit = (data: FormInstitution) => {
-    props.onSave(data, props?.institution?.id)
+    // Ensure balance is not negative or unknown
+    if (data.balance !== undefined && data.balance >= 0) {
+      props.onSave(data, props?.institution?.id)
+    } else {
+      console.error('Invalid balance:', data.balance)
+      alert('Balance must be a non-negative number.')
+    }
   }
 
   return (
@@ -73,7 +79,7 @@ const InstitutionForm = (props: InstitutionFormProps) => {
           className="rw-label"
           errorClassName="rw-label rw-label-error"
         >
-          Contact information
+          Contact Information
         </Label>
 
         <TextField
@@ -115,7 +121,11 @@ const InstitutionForm = (props: InstitutionFormProps) => {
           defaultValue={props.institution?.balance}
           className="rw-input"
           errorClassName="rw-input rw-input-error"
-          validation={{ valueAsNumber: true, required: true }}
+          validation={{
+            valueAsNumber: true,
+            required: true,
+            min: 0, // Prevent negative numbers
+          }}
         />
 
         <FieldError name="balance" className="rw-field-error" />

@@ -1,6 +1,6 @@
 import type {
-  DeleteInstitutionMutation,
-  DeleteInstitutionMutationVariables,
+  UpdateInstitutionMutation,
+  UpdateInstitutionMutationVariables,
   FindInstitutionById,
 } from 'types/graphql'
 
@@ -11,13 +11,14 @@ import { toast } from '@redwoodjs/web/toast'
 
 import { timeTag } from 'src/lib/formatters'
 
-const DELETE_INSTITUTION_MUTATION: TypedDocumentNode<
-  DeleteInstitutionMutation,
-  DeleteInstitutionMutationVariables
+const SOFT_DELETE_INSTITUTION_MUTATION: TypedDocumentNode<
+  UpdateInstitutionMutation,
+  UpdateInstitutionMutationVariables
 > = gql`
-  mutation DeleteInstitutionMutation($id: Int!) {
-    deleteInstitution(id: $id) {
+  mutation UpdateInstitutionMutation($id: Int!, $input: UpdateInstitutionInput!) {
+    updateInstitution(id: $id, input: $input) {
       id
+      isActive
     }
   }
 `
@@ -27,7 +28,7 @@ interface Props {
 }
 
 const Institution = ({ institution }: Props) => {
-  const [deleteInstitution] = useMutation(DELETE_INSTITUTION_MUTATION, {
+  const [updateInstitution] = useMutation(SOFT_DELETE_INSTITUTION_MUTATION, {
     onCompleted: () => {
       toast.success('Institution deleted')
       navigate(routes.institutions())
@@ -37,9 +38,9 @@ const Institution = ({ institution }: Props) => {
     },
   })
 
-  const onDeleteClick = (id: DeleteInstitutionMutationVariables['id']) => {
-    if (confirm('Are you sure you want to delete institution ' + id + '?')) {
-      deleteInstitution({ variables: { id } })
+  const onSoftDeleteClick = (id: UpdateInstitutionMutationVariables['id']) => {
+    if (confirm('Are you sure you want to delete institution ' + id + ' ?')) {
+      updateInstitution({ variables: { id, input: { isActive: false } } })
     }
   }
 
@@ -98,7 +99,7 @@ const Institution = ({ institution }: Props) => {
         <button
           type="button"
           className="rw-button rw-button-red"
-          onClick={() => onDeleteClick(institution.id)}
+          onClick={() => onSoftDeleteClick(institution.id)}
         >
           Delete
         </button>

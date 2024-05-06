@@ -1,6 +1,6 @@
 import type {
-  DeleteUserMutation,
-  DeleteUserMutationVariables,
+  UpdateUserMutation,
+  UpdateUserMutationVariables,
   FindUserById,
 } from 'types/graphql'
 
@@ -12,13 +12,14 @@ import { toast } from '@redwoodjs/web/toast'
 import { timeTag } from 'src/lib/formatters'
 import { Breadcrumbs } from '@mui/material'
 
-const DELETE_USER_MUTATION: TypedDocumentNode<
-  DeleteUserMutation,
-  DeleteUserMutationVariables
+const SOFT_DELETE_USER_MUTATION: TypedDocumentNode<
+  UpdateUserMutation,
+  UpdateUserMutationVariables
 > = gql`
-  mutation DeleteUserMutation($id: Int!) {
-    deleteUser(id: $id) {
+  mutation UpdateUserMutation($id: Int!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
       id
+      isActive
     }
   }
 `
@@ -28,7 +29,7 @@ interface Props {
 }
 
 const User = ({ user }: Props) => {
-  const [deleteUser] = useMutation(DELETE_USER_MUTATION, {
+  const [updateUser] = useMutation(SOFT_DELETE_USER_MUTATION, {
     onCompleted: () => {
       toast.success('User deleted')
       navigate(routes.users())
@@ -38,9 +39,9 @@ const User = ({ user }: Props) => {
     },
   })
 
-  const onDeleteClick = (id: DeleteUserMutationVariables['id']) => {
-    if (confirm('Are you sure you want to delete user ' + id + '?')) {
-      deleteUser({ variables: { id } })
+  const onSoftDeleteClick = (id: UpdateUserMutationVariables['id']) => {
+    if (confirm('Are you sure you want to delete user ' + id + ' ?')) {
+      updateUser({ variables: { id, input: { isActive: false } } })
     }
   }
 
@@ -91,7 +92,7 @@ const User = ({ user }: Props) => {
         <button
           type="button"
           className="rw-button rw-button-red"
-          onClick={() => onDeleteClick(user.id)}
+          onClick={() => onSoftDeleteClick(user.id)}
         >
           Delete
         </button>

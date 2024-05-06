@@ -7,7 +7,10 @@ import type {
 import { db } from 'src/lib/db'
 
 export const userBanks: QueryResolvers['userBanks'] = () => {
-  return db.userBank.findMany()
+  return db.userBank.findMany({
+    where: { isActive: true }
+  }
+  )
 }
 
 export const userBank: QueryResolvers['userBank'] = ({ id }) => {
@@ -50,12 +53,13 @@ export const userBanksByUserId: QueryResolvers['userBanksByUserId'] = ({
   userId,
 }) => {
   return db.userBank.findMany({
-    where: { userId },
+    where: { userId, isActive: true},
   })
 }
 
 export const deleteUserBank: MutationResolvers['deleteUserBank'] = ({ id }) => {
-  return db.userBank.delete({
+  return db.userBank.update({
+    data: { isActive: false },
     where: { id },
   })
 }

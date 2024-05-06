@@ -7,7 +7,11 @@ import type {
 import { db } from 'src/lib/db'
 
 export const institutions: QueryResolvers['institutions'] = () => {
-  return db.institution.findMany()
+  return db.institution.findMany(
+    {
+      where: { isActive: true }
+    }
+  )
 }
 
 export const institution: QueryResolvers['institution'] = ({ id }) => {
@@ -22,6 +26,7 @@ export const topDonatedInstitutions: QueryResolvers['topDonatedInstitutions'] = 
       balance: 'desc',
     },
     take: 5,
+    where: { isActive: true }
   })
 }
 
@@ -56,7 +61,8 @@ export const updateInstitutionBalance: MutationResolvers['updateInstitutionBalan
 export const deleteInstitution: MutationResolvers['deleteInstitution'] = ({
   id,
 }) => {
-  return db.institution.delete({
+  return db.institution.update({
+    data: { isActive: false },
     where: { id },
   })
 }

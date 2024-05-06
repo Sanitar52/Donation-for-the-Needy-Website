@@ -8,8 +8,10 @@ export const schema = gql`
     email: String!
     createdAt: DateTime!
     updatedAt: DateTime!
+    isActive: Boolean!
   }
   input userBankInput {
+    id: Int
     name: String
     balance: Float
   }
@@ -31,6 +33,7 @@ export const schema = gql`
     age: Int
     email: String
     user_banks: [userBankInput!]
+    isActive: Boolean
   }
 
   type Mutation {

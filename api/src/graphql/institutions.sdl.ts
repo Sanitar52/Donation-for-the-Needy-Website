@@ -9,6 +9,7 @@ export const schema = gql`
     balance: Float!
     createdAt: DateTime!
     updatedAt: DateTime!
+    isActive: Boolean!
   }
 
   type Query {
@@ -31,6 +32,7 @@ export const schema = gql`
     contactInformation: String
     logo: String
     balance: Float
+    isActive: Boolean
   }
 
   input UpdateInstitutionBalanceInput {

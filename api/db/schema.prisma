@@ -27,6 +27,7 @@ model Institution {
   balance            Float      @default(0)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
+  isActive           Boolean    @default(true)
 }
 
 enum PaymentStatus {
@@ -42,6 +43,7 @@ model UserBank {
   donations Donation[]
   name      String
   balance   Float
+  isActive  Boolean    @default(true)
 }
 
 model User {
@@ -53,6 +55,7 @@ model User {
   email     String     @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  isActive  Boolean    @default(true)
 }
 
 model Donation {
