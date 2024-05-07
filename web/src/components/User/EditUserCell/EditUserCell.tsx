@@ -24,8 +24,10 @@ export const QUERY: TypedDocumentNode<EditUserById> = gql`
       age
       email
       user_bank{
+        id
         name
         balance
+        isActive
       }
       createdAt
       updatedAt
@@ -45,6 +47,7 @@ const UPDATE_USER_MUTATION: TypedDocumentNode<
       email
       createdAt
       updatedAt
+      isActive
     }
   }
 `

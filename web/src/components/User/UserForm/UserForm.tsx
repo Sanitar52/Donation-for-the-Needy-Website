@@ -39,12 +39,13 @@ const CREATE_BANK_MUTATION = gql`
 const UserForm = (props: UserFormProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const [userBanks, setUserBanks] = useState([])
+  //Make sure to fetch only userBanks that are active
   useEffect(() => {
     if (props.user?.user_bank) {
-      setUserBanks(props.user.user_bank)
+      setUserBanks(props.user?.user_bank.filter((bank) => bank.isActive))
     }
   }, [])
-
+  console.log(userBanks)
   const onSubmit = (data: FormUser) => {
     //data.user_banks = userBanks.map((bank, index) => ({...bank, index}))
     let new_data = {

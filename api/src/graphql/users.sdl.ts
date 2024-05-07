@@ -11,9 +11,9 @@ export const schema = gql`
     isActive: Boolean!
   }
   input userBankInput {
-    id: Int
     name: String
     balance: Float
+    isActive: Boolean
   }
 
   type Query {
@@ -32,7 +32,7 @@ export const schema = gql`
     name: String
     age: Int
     email: String
-    user_banks: [userBankInput!]
+    user_banks: [userBankInput!]!
     isActive: Boolean
   }
 

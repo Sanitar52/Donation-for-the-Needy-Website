@@ -8,7 +8,7 @@ import type {
   CellFailureProps,
   TypedDocumentNode,
 } from '@redwoodjs/web'
-
+// fetch all institutions with given id that are active
 export const QUERY: TypedDocumentNode<
   FindInstitutionQuery,
   FindInstitutionQueryVariables

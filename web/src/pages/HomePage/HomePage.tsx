@@ -10,7 +10,7 @@ import {
   SelectField,
   set,
 } from '@redwoodjs/forms';
-import { toast } from '@redwoodjs/web/dist/toast';
+import { Toaster, toast } from '@redwoodjs/web/dist/toast';
 import { CreateUserInput, CreateUserInputVariables, CreateInstitutionInput, CreateInstitutionInputVariables, } from 'types/graphql'
 import { useEffect, useRef, useState } from 'react';
 import bgmain5 from '../../../public/bgmain5.png';
@@ -36,6 +36,7 @@ const CREATE_INSTITUTION_MUTATION = gql`
       description
       contactInformation
       logo
+      balance
     }
   }
 `
@@ -66,30 +67,31 @@ const HomePage = () => {
   const closePopup = () => {
     setShowPopup(null);
   };
-  const [createUser] = useMutation<CreateUserInput, CreateUserInputVariables>(CREATE_USER_MUTATION, {
-    onCompleted: () => {
-      alert('User created')
-    },
-  })
-  const [createInstitution] = useMutation<CreateInstitutionInput, CreateInstitutionInputVariables>(CREATE_INSTITUTION_MUTATION, {
-    onCompleted: () => {
-      alert('Institution created')
-    },
-  })
+  const [createUser] = useMutation<CreateUserInput, CreateUserInputVariables>(CREATE_USER_MUTATION)
+  const [createInstitution] = useMutation<CreateInstitutionInput, CreateInstitutionInputVariables>(CREATE_INSTITUTION_MUTATION)
 
 
   const submitUserInfo: SubmitHandler<CreateUserInput> = async (data) => {
     setIsLoading(true)
     const userAge: number = parseInt(data.age.toString())
+    if (userAge < 12) {
+      toast.error('User must be 12 or older')
+      setIsLoading(false)
+      return
+    }
+    if (userAge < 0) {
+      toast.error('User age cannot be negative')
+      setIsLoading(false)
+      return
+    }
     try {
       await createUser({ variables: { input: { ...data, age: userAge } } })
       toast.success('User created')
       setTimeout(() => {
         closePopup();
-      }, 3000); // Close the popup after 3 seconds
+      }, 2000); // Close the popup after 3 seconds
     } catch (error) {
-      toast.error('Error creating user')
-
+      toast.error('Error creating user, email already exists')
     }
     finally {
       setIsLoading(false)
@@ -99,12 +101,23 @@ const HomePage = () => {
   }
   const submitInstitutionInfo: SubmitHandler<CreateInstitutionInput> = async (data) => {
     setIsLoading(true)
+    const balance: number = parseFloat(data.balance.toString())
+    if (balance < 0) {
+      toast.error('Balance cannot be negative')
+      setIsLoading(false)
+      return
+    }
+    if (Number.isNaN(balance)) {
+      toast.error('Balance must be a number')
+      setIsLoading(false)
+      return
+    }
     try {
-      await createInstitution({ variables: { input: data } })
+      await createInstitution({ variables: { input: { ...data, balance: balance } } })
       toast.success('Institution created')
       setTimeout(() => {
         closePopup();
-      }, 3000); // Close the popup after 3 seconds
+      }, 2000); // Close the popup after 3 seconds
     } catch (error) {
       toast.error('Error creating institution')
 
@@ -119,6 +132,7 @@ const HomePage = () => {
 
   return (
     <>
+    <Toaster />
     <div
         ref={backgroundRef}
         className="min-h-screen bg-fixed bg-cover bg-center transition-all duration-300 relative"
@@ -239,6 +253,7 @@ const HomePage = () => {
         </div>
       )}
     </div>
+
     </>
   );
   function renderPopup() {
@@ -271,9 +286,10 @@ const HomePage = () => {
         </Label>
         <TextField
           name="email"
-          defaultValue={"example@gmail.com"}
+          placeholder={"example@gmail.com"}
           errorClassName="error"
           className="rw-input"
+
         />
         <FieldError name="email" className="error" />
         <Label name="age" errorClassName="error" className="rw-label">
@@ -314,7 +330,7 @@ const HomePage = () => {
     )
     case 'addInstitution':
       return(
-      <div className="popup">
+      <div className="popup mt-28">
         <Form onSubmit={submitInstitutionInfo} className="rw-form-wrapper">
           <Label
             name="name"
@@ -365,6 +381,20 @@ const HomePage = () => {
             className="rw-input"
           />
           <FieldError name="logo" className="error" />
+          <Label name="balance" errorClassName="error" className="rw-label">
+            Balance
+          </Label>
+          <TextField
+            name="balance"
+            defaultValue={"0"}
+            min={0}
+            aria-valuemin={0}
+            errorClassName="error"
+            className="rw-input"
+
+          />
+          <FieldError name="balance" className="error" />
+
           <div className="rw-button-group">
             <Submit
               className={`rw-button rw-button-blue ${isLoading ? 'rw-loading' : ''

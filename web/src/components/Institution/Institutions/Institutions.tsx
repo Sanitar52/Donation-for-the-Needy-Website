@@ -12,35 +12,33 @@ import { toast } from '@redwoodjs/web/toast'
 import { QUERY } from 'src/components/Institution/InstitutionsCell'
 import { timeTag, truncate } from 'src/lib/formatters'
 
-const DELETE_INSTITUTION_MUTATION: TypedDocumentNode<
+// Mutation for soft deleting (setting isActive to false)
+const SOFT_DELETE_INSTITUTION_MUTATION: TypedDocumentNode<
   DeleteInstitutionMutation,
   DeleteInstitutionMutationVariables
 > = gql`
-  mutation DeleteInstitutionMutation($id: Int!) {
-    deleteInstitution(id: $id) {
+  mutation SoftDeleteInstitutionMutation($id: Int!) {
+    updateInstitution(id: $id, input: { isActive: false }) {
       id
     }
   }
 `
 
 const InstitutionsList = ({ institutions }: FindInstitutions) => {
-  const [deleteInstitution] = useMutation(DELETE_INSTITUTION_MUTATION, {
+  const [softDeleteInstitution] = useMutation(SOFT_DELETE_INSTITUTION_MUTATION, {
     onCompleted: () => {
       toast.success('Institution deleted')
     },
     onError: (error) => {
       toast.error(error.message)
     },
-    // This refetches the query on the list page. Read more about other ways to
-    // update the cache over here:
-    // https://www.apollographql.com/docs/react/data/mutations/#making-all-other-cache-updates
     refetchQueries: [{ query: QUERY }],
     awaitRefetchQueries: true,
   })
 
-  const onDeleteClick = (id: DeleteInstitutionMutationVariables['id']) => {
-    if (confirm('Are you sure you want to delete institution ' + id + '?')) {
-      deleteInstitution({ variables: { id } })
+  const onSoftDeleteClick = (id: DeleteInstitutionMutationVariables['id']) => {
+    if (confirm('Are you sure you want to delete institution ' + id + ' ?')) {
+      softDeleteInstitution({ variables: { id } })
     }
   }
 
@@ -64,12 +62,11 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
             <tr key={institution.id}>
               <td>{truncate(institution.id)}</td>
               <td className="flex items-center">
-              <div className="relative w-10 h-10 inline-flex overflow-hidden mx-3 bg-gray-100 rounded-lg dark:bg-gray-600">
-                <img className=" text-gray-400 -left-1" src={institution.logo}>
-                    </img>
-              </div>
+                <div className="relative w-10 h-10 inline-flex overflow-hidden mx-3 bg-gray-100 rounded-lg dark:bg-gray-600">
+                  <img className="text-gray-400 -left-1" src={institution.logo} />
+                </div>
                 {truncate(institution.name)}
-                </td>
+              </td>
               <td>{truncate(institution.description)}</td>
               <td>{truncate(institution.contactInformation)}</td>
               <td>{truncate(institution.balance)}</td>
@@ -93,9 +90,9 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
                   </Link>
                   <button
                     type="button"
-                    title={'Delete institution ' + institution.id}
+                    title={'Soft delete institution ' + institution.id}
                     className="rw-button rw-button-small rw-button-red"
-                    onClick={() => onDeleteClick(institution.id)}
+                    onClick={() => onSoftDeleteClick(institution.id)}
                   >
                     Delete
                   </button>

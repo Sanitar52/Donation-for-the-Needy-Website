@@ -5,14 +5,28 @@ import type {
 } from 'types/graphql'
 
 import { db } from 'src/lib/db'
+import { userBanks } from '../userBanks/userBanks'
 
 export const users: QueryResolvers['users'] = () => {
-  return db.user.findMany()
+  return db.user.findMany({
+    where: { isActive: true },
+    include: {
+      user_bank: {
+        where: { isActive: true },
+      },
+    },
+  })
 }
 
+// Query a single active user with their active user banks
 export const user: QueryResolvers['user'] = ({ id }) => {
   return db.user.findUnique({
     where: { id },
+    include: {
+      user_bank: {
+        where: { isActive: true },
+      },
+    },
   })
 }
 
@@ -25,7 +39,7 @@ export const createUser: MutationResolvers['createUser'] = async ({ input }) => 
 
     }
   })
-
+  if (!input.user_banks) return user
   await db.userBank.createMany({
     data: input.user_banks.map((user_bank) => ({
       name: user_bank.name,
@@ -45,20 +59,11 @@ export const updateUser: MutationResolvers['updateUser'] = async ({ id, input })
     },
     where: { id },
   })
+  if (!input.user_banks) return user
+  //if the user added new banks, create them only if they are not already in the database
+
+
     // update the user banks if the input does not have any new banks and
-
-    const user_banks = await db.userBank.findMany({
-      where: { userId: id, isActive: true},
-    })
-    // I want to check if the new input user_banks names are different from the current user_banks names if they are not then I don't want to delete the user_banks and create new ones
-
-    const input_user_banks_names = input.user_banks.map((user_bank) => user_bank.name)
-    const current_user_banks_names = user_banks.map((user_bank) => user_bank.name)
-    // check if there is no change here in the balance or length or names of the user banks
-    if (input_user_banks_names.length === current_user_banks_names.length && input_user_banks_names.every((name) => current_user_banks_names.includes(name)) && input.user_banks.every((user_bank, index) => user_bank.balance === user_banks[index].balance)){
-      return user
-    }
-
     await db.userBank.updateMany({
       where: { userId: id },
       data: {
@@ -72,6 +77,7 @@ export const updateUser: MutationResolvers['updateUser'] = async ({ id, input })
         balance: user_bank.balance,
         userId: user.id,
       })),
+      skipDuplicates: true,
     })
 
 
