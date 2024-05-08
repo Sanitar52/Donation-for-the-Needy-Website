@@ -12,11 +12,14 @@ import { Set, Router, Route } from '@redwoodjs/router'
 import HeaderLayout from 'src/layouts/HeaderLayout'
 
 import ScaffoldLayout from 'src/layouts/ScaffoldLayout'
+import FooterLayout from 'src/layouts/FooterLayout/'
 
 const Routes = () => {
   return (
     <Router>
+
       <Set wrap={HeaderLayout}>
+      <Set wrap={FooterLayout}>
       <Route path="/past-donations" page={PastDonationsPage} name="pastDonations" />
       <Route path="/donation" page={DonationPage} name="donation" />
       <Set wrap={ScaffoldLayout} title="Users" titleTo="users" buttonLabel="New User" buttonTo="newUser">
@@ -32,6 +35,8 @@ const Routes = () => {
         <Route path="/institutions" page={InstitutionInstitutionsPage} name="institutions" />
       </Set>
       <Route path="/" page={HomePage} name="home" />
+      <Route path="/gsm-load-balance" page={GSMLoadBalancePage} name="gsmLoadBalance" />
+      </Set>
       </Set>
       <Route notfound page={NotFoundPage} />
     </Router>

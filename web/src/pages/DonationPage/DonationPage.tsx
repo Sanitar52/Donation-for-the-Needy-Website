@@ -5,7 +5,7 @@ import {
   CreateDonationInput,
   CreateDonationInputVariables,
 } from 'types/graphql'
-import donatebg2 from '../../../public/donatebg2.png'
+import donatebg3 from '../../../public/donatebg3.png'
 import { Toaster, toast } from '@redwoodjs/web/dist/toast'
 
 const GET_INSTITUTIONS = gql`
@@ -450,7 +450,7 @@ const DonationPage = () => {
 
       <div
         className="min-h-screen bg-fixed bg-cover bg-center transition-all duration-300 relative justify-center items-center mt-48"
-        style={{ backgroundImage: `url(${donatebg2})` }}
+        style={{ backgroundImage: `url(${donatebg3})` }}
       >
         <Form
           onSubmit={onSubmit}
