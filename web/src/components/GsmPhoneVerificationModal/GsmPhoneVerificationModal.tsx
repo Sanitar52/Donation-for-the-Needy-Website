@@ -1,10 +1,10 @@
-import { useState } from "react"
+import { useState } from 'react'
 import otp from '../../../public/otp.png'
-import { set } from "@redwoodjs/forms"
 
 const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [code, setCode] = useState('')
+  const [otpCode, setOtpCode] = useState('')
   const [isCodeSent, setIsCodeSent] = useState(false)
   const [isCodeVerified, setIsCodeVerified] = useState(false)
   const [isCodeError, setIsCodeError] = useState(false)
@@ -14,10 +14,9 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
   const [isCodeResendError, setIsCodeResendError] = useState(false)
   const [isCodeResent, setIsCodeResent] = useState(false)
   const [isPhoneNumberError, setIsPhoneNumberError] = useState(false)
-  const apiKey = process.env.OTP_API_KEY
-  const mainUrl = process.env.OTP_URL
-  const apiUrl = "/api/v3/otp/otp_get.php"
-
+  const apiKey = process.env.REDWOOD_ENV_OTP_API_KEY
+  const mainUrl = process.env.REDWOOD_ENV_OTP_URL
+  const apiUrl = '/api/v3/otp/otp_get.php'
 
   const handleSendCode = async () => {
     if (phoneNumber.length !== 10) {
@@ -40,26 +39,19 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
       )
 
       if (!response.ok) {
-        // Handle HTTP errors
         throw new Error(`HTTP error! Status: ${response.status}`)
       }
 
-      const data = await response.json()
+      const result = await response.json()
 
-      // Log the response or inspect it
-      console.log(data)
-      console.log(data['result'])
-      console.log(data['otp_code'])
-
-      // Perform any specific validation checks if required
-      if (data && data.status === 'success') {
+      if (result.result === true) {
         setIsCodeSent(true)
+        setOtpCode(result.otp_code)
       } else {
         setIsCodeError(true)
       }
 
     } catch (error) {
-      // Log the error for debugging purposes
       console.error('Error while sending code:', error)
       setIsCodeError(true)
 
@@ -68,12 +60,15 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
     }
   }
 
-
   const handleVerifyCode = () => {
     setIsVerifyingCode(true)
     setTimeout(() => {
+      if (code === otpCode) {
+        setIsCodeVerified(true)
+      } else {
+        setIsCodeError(true)
+      }
       setIsVerifyingCode(false)
-      setIsCodeVerified(true)
     }, 2000)
   }
 
@@ -85,8 +80,6 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
     }, 2000)
   }
 
-
-
   if (!isOpen) return null
 
   return (
@@ -97,7 +90,11 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
             <img src={otp} alt="OTP" className="h-6 w-6" />
           </div>
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            {isSendingCode || isCodeResending ? 'Sending Code...' : isCodeSent || isCodeResent ? 'Enter the number we have sent to your phone' : 'Verify Phone Number'}
+            {isSendingCode || isCodeResending
+              ? 'Sending Code...'
+              : isCodeSent || isCodeResent
+              ? 'Enter the number we have sent to your phone'
+              : 'Verify Phone Number'}
           </h3>
           <div className="mt-2">
             <input
