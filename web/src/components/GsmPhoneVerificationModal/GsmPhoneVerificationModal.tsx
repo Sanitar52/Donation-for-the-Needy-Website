@@ -14,8 +14,8 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
   const [isCodeResendError, setIsCodeResendError] = useState(false)
   const [isCodeResent, setIsCodeResent] = useState(false)
   const [isPhoneNumberError, setIsPhoneNumberError] = useState(false)
-  const apiKey = process.env.REDWOOD_ENV_OTP_API_KEY
-  const mainUrl = process.env.REDWOOD_ENV_OTP_URL
+  const apiKey = process.env.OTP_API_KEY
+  const mainUrl = process.env.OTP_URL
   const apiUrl = '/api/v3/otp/otp_get.php'
 
   const handleSendCode = async () => {
