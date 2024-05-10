@@ -37,6 +37,15 @@ export const updateUserBankBalance: MutationResolvers['updateUserBankBalance'] =
     where: { id },
   })
 }
+export const increaseUserBankBalance: MutationResolvers['increaseUserBankBalance'] = ({
+  id,
+  balance,
+}) => {
+  return db.userBank.update({
+    data: { balance: { increment: balance } },
+    where: { id },
+  })
+}
 
 export const updateUserBank: MutationResolvers['updateUserBank'] = ({
   id,

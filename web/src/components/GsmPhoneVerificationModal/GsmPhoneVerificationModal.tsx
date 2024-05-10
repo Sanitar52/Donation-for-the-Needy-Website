@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import otp from '../../../public/otp.png'
-
+import { useMutation } from '@redwoodjs/web'
+import { set } from '@redwoodjs/forms'
+import { Toaster, toast } from '@redwoodjs/web/dist/toast'
+const GSM_PHONE_VERIFICATION = gql`
+  mutation CreateGsmPhoneVerification($input: CreateGsmPhoneVerificationInput!) {
+    createGsmPhoneVerification(input: $input) {
+      otp_code
+    }
+  }
+`
 const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [code, setCode] = useState('')
@@ -18,6 +27,24 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
   const mainUrl = process.env.OTP_URL
   const apiUrl = '/api/v3/otp/otp_get.php'
 
+
+  const [createGsmPhoneVerification] = useMutation(GSM_PHONE_VERIFICATION, {
+    onCompleted: (data) => {
+      if (data.createGsmPhoneVerification?.otp_code) {
+        setOtpCode(data.createGsmPhoneVerification.otp_code)
+        setIsCodeSent(true)
+      } else {
+        setIsCodeError(true)
+      }
+      setIsSendingCode(false)
+    },
+    onError: (error) => {
+      console.error('Error while sending code:', error)
+      setIsCodeError(true)
+      setIsSendingCode(false)
+    },
+  })
+
   const handleSendCode = async () => {
     if (phoneNumber.length !== 10) {
       setIsPhoneNumberError(true)
@@ -33,29 +60,15 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
     setIsPhoneNumberError(false)
     setIsSendingCode(true)
 
+
     try {
-      const response = await fetch(
-        `${mainUrl}${apiUrl}?api_key=${apiKey}&mobile=90${phoneNumber}&digits=4&report=1&lang=1&response_type=json`
-      )
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`)
-      }
-
-      const result = await response.json()
-
-      if (result.result === true) {
-        setIsCodeSent(true)
-        setOtpCode(result.otp_code)
-      } else {
-        setIsCodeError(true)
-      }
-
+      await createGsmPhoneVerification({variables: { input: {phoneNumber, mainUrl, apiUrl, apiKey}}})
+      console.log(otpCode)
     } catch (error) {
       console.error('Error while sending code:', error)
       setIsCodeError(true)
-
-    } finally {
+    }
+    finally {
       setIsSendingCode(false)
     }
   }
@@ -65,6 +78,7 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
     setTimeout(() => {
       if (code === otpCode) {
         setIsCodeVerified(true)
+        toast.success('Phone number verified successfully.')
       } else {
         setIsCodeError(true)
       }
@@ -86,15 +100,15 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3 text-center">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+          <div className="mx-auto flex items-center h-12 w-12 justify-center rounded-3xl bg-green-300  ">
             <img src={otp} alt="OTP" className="h-6 w-6" />
           </div>
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             {isSendingCode || isCodeResending
               ? 'Sending Code...'
-              : isCodeSent || isCodeResent
-              ? 'Enter the number we have sent to your phone'
-              : 'Verify Phone Number'}
+              : isCodeVerified
+              ? 'Phone number verified, click confirm to continue'
+              : isCodeSent || isCodeResent ? 'Enter the number we have sent to your phone' : 'Verify Phone Number'}
           </h3>
           <div className="mt-2">
             <input
@@ -129,29 +143,36 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
             {isCodeResent && (
               <p className="text-green-500 text-sm mt-2">Code resent successfully.</p>
             )}
+            {isCodeVerified && (
+                <p className="text-green-500 text-sm mt-2">Code verified successfully.</p>
+              )}
             <div className="flex justify-between mt-4">
               {isCodeSent && (
                 <button
                   onClick={handleResendCode}
-                  className="px-4 py-2 text-sm text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none"
+                  className="px-1 py-1 text-xs text-red-600 rounded-md hover:bg-gray-400 focus:outline-none"
                 >
                   Resend Code
                 </button>
               )}
+
               <button
                 onClick={isCodeSent ? handleVerifyCode : handleSendCode}
                 className="px-4 py-2 text-sm text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none"
+                disabled={isSendingCode || isVerifyingCode || isCodeVerified || isCodeResending}
               >
-                {isCodeSent ? 'Verify Code' : 'Send Code'}
+                {isVerifyingCode ? 'Verifying Code...' : isCodeVerified ? 'Code Verified' : isCodeSent ? 'Verify Code' : isSendingCode ? 'Sending Code...' : 'Send Code'}
               </button>
+
             </div>
           </div>
           <div className="items-center px-4 py-3">
             <button
-              onClick={() => onConfirm(phoneNumber)}
+              onClick={() => onConfirm(phoneNumber, ' Verified')}
+              disabled={!isCodeVerified}
               className="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2"
             >
-              Confirm
+              { isCodeVerified ? 'Confirm' : 'Verify Phone Number to Continue'}
             </button>
           </div>
           <div className="items-center px-4 py-3">
@@ -164,6 +185,7 @@ const GsmPhoneVerificationModal = ({ isOpen, onClose, onConfirm }) => {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }

@@ -36,6 +36,7 @@ export const schema = gql`
     updateUserBank(id: Int!, input: UpdateUserBankInput!): UserBank!
       @skipAuth
     updateUserBankBalance(id: Int!, balance: Float!): UserBank! @skipAuth
+    increaseUserBankBalance(id: Int!, balance: Float!): UserBank! @skipAuth
     deleteUserBank(id: Int!): UserBank! @requireAuth
   }
 `

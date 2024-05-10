@@ -24,10 +24,9 @@ const defaultItems = [
   },
 ];
 
-function InstitutionSlider({ title, items = [] }) {
+function InstitutionSlider({ title = 'Recent Institutions', items = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState('');
-  console.log(items);
 
   // Fallback to default items if the provided items array is empty
   const allItems = items.length === 0 ? defaultItems : items;
@@ -46,12 +45,11 @@ function InstitutionSlider({ title, items = [] }) {
     );
   };
 
-  const displayedItems = [
-    allItems[currentIndex],
-    allItems[(currentIndex + 1) % allItems.length],
-    allItems[(currentIndex + 2) % allItems.length],
-    allItems[(currentIndex + 3) % allItems.length],
-  ];
+  const displayedItems = allItems.length
+    ? Array.from({ length: Math.min(4, allItems.length) }).map(
+        (_, index) => allItems[(currentIndex + index) % allItems.length]
+      )
+    : [];
 
   // Reset animation class after transition
   useEffect(() => {
@@ -73,19 +71,23 @@ function InstitutionSlider({ title, items = [] }) {
           <div
             className={`flex justify-between space-x-4 transition-all duration-500 ${transitionDirection}`}
           >
-            {displayedItems.map((item, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center flex-1 bg-white rounded-lg p-4 shadow-md"
-              >
-                <img
-                  src={item.institutions.logo}
-                  alt={item.institutions.name}
-                  className="w-20 h-20 object-cover mb-2 rounded-full border-2 border-gray-300"
-                />
-                <h3 className="font-bold">{item.institutions.name}</h3>
-              </div>
-            ))}
+            {displayedItems.length ? (
+              displayedItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center flex-1 bg-white rounded-lg p-4 shadow-md"
+                >
+                  <img
+                    src={item.institutions.logo}
+                    alt={item.institutions.name}
+                    className="w-20 h-20 object-cover mb-2 rounded-full border-2 border-gray-300"
+                  />
+                  <h3 className="font-bold">{item.institutions.name}</h3>
+                </div>
+              ))
+            ) : (
+              <div>No recent institutions available</div>
+            )}
           </div>
         </div>
         <button
