@@ -94,6 +94,7 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, details }) => {
     </div>
   )
 }
+
 const OrganisationModal = ({ isOpen, onClose, onConfirm }) => {
   const { loading, error, data } = useQuery(GET_INSTITUTIONS)
 
@@ -441,6 +442,11 @@ const DonationPage = () => {
     }
   }
 
+  const handleCancelConfirmation = () => {
+    setIsLoading(false)
+    setShowConfirmation(false)
+  }
+
   if (loadingInstitutionsData) return <div>Loading...</div>
   if (institutionErrorData) return <div>Error: {institutionErrorData.message}</div>
 
@@ -550,10 +556,7 @@ const DonationPage = () => {
       <ConfirmationModal
         isOpen={showConfirmation}
         onConfirm={handleConfirmDonation}
-        onCancel={() => {
-          setIsLoading(false)
-          setShowConfirmation(false)
-        }}
+        onCancel={handleCancelConfirmation}
         details={confirmDetails}
       />
     </>

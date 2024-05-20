@@ -87,7 +87,7 @@ const User = ({ user }: Props) => {
           to={routes.editUser({ id: user.id })}
           className="rw-button rw-button-blue"
         >
-          Edit
+          Details
         </Link>
         <button
           type="button"

@@ -94,7 +94,7 @@ const Institution = ({ institution }: Props) => {
           to={routes.editInstitution({ id: institution.id })}
           className="rw-button rw-button-blue"
         >
-          Edit
+          Details
         </Link>
         <button
           type="button"

@@ -151,7 +151,7 @@ const UserForm = (props: UserFormProps) => {
 
         <FieldError name="email" className="rw-field-error" />
         { userBanks.length!== 0 && <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Banks</h3>
+          <h3 className="text-lg leading-6 font-medium text-gray-900 my-10">Banks</h3>
           <table className="table-auto">
             <thead>
               <tr>

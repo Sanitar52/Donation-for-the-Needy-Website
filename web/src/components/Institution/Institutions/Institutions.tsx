@@ -74,19 +74,13 @@ const InstitutionsList = ({ institutions }: FindInstitutions) => {
               <td>{timeTag(institution.updatedAt)}</td>
               <td>
                 <nav className="rw-table-actions">
-                  <Link
-                    to={routes.institution({ id: institution.id })}
-                    title={'Show institution ' + institution.id + ' detail'}
-                    className="rw-button rw-button-small"
-                  >
-                    Show
-                  </Link>
+
                   <Link
                     to={routes.editInstitution({ id: institution.id })}
                     title={'Edit institution ' + institution.id}
                     className="rw-button rw-button-small rw-button-blue"
                   >
-                    Edit
+                    Details
                   </Link>
                   <button
                     type="button"
